@@ -1,27 +1,5 @@
 {
-  "name": "sim_management_system",
-  "version": "1.0.0",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
-    "ml": "python ml_api.py",
-    "setup-ml": "pip install -r requirements.txt",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": ["sim", "management", "anomaly", "detection", "ml"],
-  "author": "Nayara Energy",
-  "license": "ISC",
-  "description": "SIM Management System with ML-based Anomaly Detection",
   "dependencies": {
-    "bcryptjs": "^3.0.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
-    "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.16.0",
-    "multer": "^2.0.1",
-    "nodemailer": "^7.0.3",
-    "node-fetch": "^2.7.0"
+    "bcryptjs": "^3.0.2"
   }
 }
