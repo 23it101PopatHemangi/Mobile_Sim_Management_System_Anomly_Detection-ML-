@@ -1,0 +1,21 @@
+
+  {
+    "sim_id": "VI1001",
+    "customer_id": "CUST0001",
+    "phone_no": "8484215378",
+    "operator": "Vi",
+    "status": "Active",
+    "registered_location": "Mumbai",
+    "current_location": "Mumbai",
+    "call_count_outgoing": 10,
+    "call_count_incoming": 5,
+    "avg_call_duration": 120,
+    "sms_count_sent": 20,
+    "sms_count_received": 15,
+    "avg_daily_usage": 100,
+    "usage_variance": 5,
+    "anomaly_score": 0.014417927124102281,
+    "confidence": 0.014417927124102281,
+    "is_anomaly": false,
+    "timestamp": "2025-09-25T05:19:10.854104"
+  } 

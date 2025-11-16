@@ -1,0 +1,249 @@
+{
+  "timestamp": "2025-09-24T23:47:25.321Z",
+  "total_records": 22,
+  "anomalies_found": 0,
+  "results": [
+    {
+      "anomaly_score": 0.01573492601207116,
+      "confidence": 0.01573492601207116,
+      "customer_id": "emp001",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6359874136985201",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.227391"
+    },
+    {
+      "anomaly_score": 0.009822483074908739,
+      "confidence": 0.009822483074908739,
+      "customer_id": "emp001",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6359874136985201",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.228380"
+    },
+    {
+      "anomaly_score": 0.008201680638789344,
+      "confidence": 0.008201680638789344,
+      "customer_id": "emp001",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6359874136985201",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.228380"
+    },
+    {
+      "anomaly_score": 0.005879792034360898,
+      "confidence": 0.005879792034360898,
+      "customer_id": "emp001",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6359874136985201",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.228380"
+    },
+    {
+      "anomaly_score": 0.007507555395501131,
+      "confidence": 0.007507555395501131,
+      "customer_id": "EMP001",
+      "is_anomaly": false,
+      "operator": "Airtel",
+      "phone_no": "",
+      "sim_id": "8456987123654789",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.229262"
+    },
+    {
+      "anomaly_score": 0.019011224476271904,
+      "confidence": 0.019011224476271904,
+      "customer_id": "emp003",
+      "is_anomaly": false,
+      "operator": "BSNL",
+      "phone_no": "",
+      "sim_id": "6359874136985208",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.229262"
+    },
+    {
+      "anomaly_score": 0.011728252931535399,
+      "confidence": 0.011728252931535399,
+      "customer_id": "emp003",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "4213698744556633",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.229262"
+    },
+    {
+      "anomaly_score": 0.005953910146918817,
+      "confidence": 0.005953910146918817,
+      "customer_id": "emp001",
+      "is_anomaly": false,
+      "operator": "Airtel",
+      "phone_no": "",
+      "sim_id": "6359874136985201",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.229262"
+    },
+    {
+      "anomaly_score": 0.01567355714240476,
+      "confidence": 0.01567355714240476,
+      "customer_id": "",
+      "is_anomaly": false,
+      "operator": "Airtel",
+      "phone_no": "",
+      "sim_id": "6987456398745631",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.230263"
+    },
+    {
+      "anomaly_score": 0.01569459756129299,
+      "confidence": 0.01569459756129299,
+      "customer_id": "",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6541236987456321",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.230263"
+    },
+    {
+      "anomaly_score": 0.012557111330045001,
+      "confidence": 0.012557111330045001,
+      "customer_id": "emp001",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6598741236547896",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.230263"
+    },
+    {
+      "anomaly_score": 0.013030437143892015,
+      "confidence": 0.013030437143892015,
+      "customer_id": "emp009",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "9546879632145698",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.230263"
+    },
+    {
+      "anomaly_score": 0.005536541028564379,
+      "confidence": 0.005536541028564379,
+      "customer_id": "emp001",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6598741236598479",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.230263"
+    },
+    {
+      "anomaly_score": 0.010044094577743912,
+      "confidence": 0.010044094577743912,
+      "customer_id": "Emp101",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6589745632145698",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.230263"
+    },
+    {
+      "anomaly_score": 0.007336919858993152,
+      "confidence": 0.007336919858993152,
+      "customer_id": "",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6954123698745632",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.230263"
+    },
+    {
+      "anomaly_score": 0.015399732029310942,
+      "confidence": 0.015399732029310942,
+      "customer_id": "emp007",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6365498712365489",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.231262"
+    },
+    {
+      "anomaly_score": 0.004910160989360757,
+      "confidence": 0.004910160989360757,
+      "customer_id": "EMP002",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6359874136985203",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.231262"
+    },
+    {
+      "anomaly_score": 0.013676536359746916,
+      "confidence": 0.013676536359746916,
+      "customer_id": "emp004",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6547896321456887",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.231262"
+    },
+    {
+      "anomaly_score": 0.004931153320689552,
+      "confidence": 0.004931153320689552,
+      "customer_id": "EMP0022",
+      "is_anomaly": false,
+      "operator": "Jio",
+      "phone_no": "",
+      "sim_id": "6359874563695412",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.231262"
+    },
+    {
+      "anomaly_score": 0.0066277944592923466,
+      "confidence": 0.0066277944592923466,
+      "customer_id": "emp0063",
+      "is_anomaly": false,
+      "operator": "Airtel",
+      "phone_no": "",
+      "sim_id": "6359874636987456",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.231262"
+    },
+    {
+      "anomaly_score": 0.009217740665843077,
+      "confidence": 0.009217740665843077,
+      "customer_id": "EMP060",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6589745632145696",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.231262"
+    },
+    {
+      "anomaly_score": 0.004276562539635043,
+      "confidence": 0.004276562539635043,
+      "customer_id": "EMP060",
+      "is_anomaly": false,
+      "operator": "Vi",
+      "phone_no": "",
+      "sim_id": "6589745632145696",
+      "status": "Assigned",
+      "timestamp": "2025-09-25T05:17:25.231262"
+    }
+  ]
+}

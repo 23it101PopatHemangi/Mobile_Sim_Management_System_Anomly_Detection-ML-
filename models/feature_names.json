@@ -1,0 +1,1 @@
+["call_count_outgoing", "call_count_incoming", "avg_call_duration", "sms_count_sent", "sms_count_received", "avg_daily_usage", "usage_variance", "is_company_number", "status", "registered_location", "current_location", "operator", "phone_prefix"]
