@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Settings - Nayara</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+    document.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    });
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "/login.html";
+    }
+  </script>
+  <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet" />
+</head>
+<body class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white">
+  <div class="max-w-3xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">User Settings</h1>
+
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 space-y-6">
+      <div>
+        <h2 class="text-xl font-semibold mb-2">Display Preferences</h2>
+        <button onclick="toggleTheme()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">
+          Toggle Light/Dark Mode
+        </button>
+      </div>
+
+      <div>
+        <h2 class="text-xl font-semibold mb-2">Account</h2>
+        <p class="mb-2">Update or manage your account preferences.</p>
+        <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow" onclick="logout()">
+          Logout
+        </button>
+      </div>
+
+      <div>
+        <h2 class="text-xl font-semibold mb-2">Notification Preferences</h2>
+        <label class="flex items-center space-x-2">
+          <input type="checkbox" class="form-checkbox text-blue-600" checked>
+          <span>Email Notifications</span>
+        </label>
+        <label class="flex items-center space-x-2 mt-2">
+          <input type="checkbox" class="form-checkbox text-blue-600">
+          <span>SMS Alerts</span>
+        </label>
+      </div>
+
+      <div>
+        <a href="/employee-dashboard.html" class="inline-block mt-6 text-blue-600 hover:underline">
+          ← Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

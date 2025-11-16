@@ -1,0 +1,108 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - Nayara</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet">
+  <style>
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-tr from-blue-900 via-indigo-900 to-gray-900 min-h-screen flex items-center justify-center px-4">
+  <div class="glass max-w-lg w-full p-10 rounded-2xl shadow-2xl text-white">
+    <div class="flex justify-center mb-6">
+      <img src="sim_card_logo.png" alt="Nayara Logo" class="w-20 h-20 rounded-full border border-white shadow-lg">
+    </div>
+    <h2 class="text-3xl font-bold text-center mb-2">Welcome Back</h2>
+    <p class="text-center text-sm text-gray-200 mb-6">Log in to access your dashboard</p>
+
+    <form id="loginForm" class="space-y-5">
+      <div>
+        <label class="block text-sm mb-1">Email</label>
+        <input type="email" name="email" class="w-full rounded px-4 py-2 bg-white/20 placeholder-white/70 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="you@example.com" required>
+      </div>
+      <div>
+        <label class="block text-sm mb-1">Password</label>
+        <input type="password" name="password" class="w-full rounded px-4 py-2 bg-white/20 placeholder-white/70 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition duration-300">
+        Log In
+      </button>
+    </form>
+
+    <p class="mt-6 text-sm text-center">
+      Don’t have an account?
+      <a href="/signup.html" class="text-blue-300 hover:underline">Sign up here</a>
+    </p>
+  </div>
+
+  <!-- <script>
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = Object.fromEntries(new FormData(e.target));
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+      alert(data.message);
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        if (data.role === 'Employee') window.location.href = "/employee-dashboard.html";
+        else if (data.role === 'HR') window.location.href = "/hr-dashboard.html";
+        else if (data.role === 'Admin') window.location.href = "/admin-dashboard.html";
+        else if (data.role === 'hod') window.location.href = 'hod_dashboard.html'; // ✅ make sure this exists!
+      } else {
+        console.error("Login failed:", data);
+      }
+    });
+  </script> -->
+ <script>
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = Object.fromEntries(new FormData(e.target));
+
+  const res  = await fetch("/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(formData)
+  });
+  const data = await res.json();
+  alert(data.message);
+
+  if (res.ok) {
+    /* ---------- save auth ----------- */
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('sim_user', JSON.stringify({ email: formData.email, role: data.role }));
+
+    /* ---------- NEW: check ?redirect= ----------- */
+    const params   = new URLSearchParams(window.location.search);
+    const redirect = params.get("redirect");        // e.g. "hod-dashboard.html"
+    if (redirect) {
+      window.location.href = `/${redirect}`;
+      return;                                       // stop further role logic
+    }
+
+    /* ---------- existing role‑based landing ------- */
+    const role = data.role.toLowerCase();
+    if      (role === 'employee') window.location.href = "/employee-dashboard.html";
+    else if (role === 'hr')       window.location.href = "/hr-dashboard.html";
+    else if (role === 'admin')    window.location.href = "/admin-dashboard.html";
+    else if (role === 'hod')      window.location.href = "/hod-dashboard.html";
+  } else {
+    console.error("Login failed:", data);
+  }
+});
+
+</script>
+
+</body>
+</html>

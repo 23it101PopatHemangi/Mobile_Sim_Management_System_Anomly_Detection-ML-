@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HR Dashboard - Nayara</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+    document.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    });
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+  </script>
+  <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet" />
+</head>
+<body class="min-h-screen flex bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-[#002f4b] text-white flex flex-col py-6 px-4">
+    <div class="flex items-center justify-center mb-6">
+      <img src="sim_card_logo.png" alt="Nayara Logo" class="w-20 h-20 object-contain rounded-full shadow-md" />
+    </div>
+    <h1 class="text-xl font-bold text-center mb-6">HR Dashboard</h1>
+    <nav class="space-y-4">
+      <a href="#" class="flex items-center gap-2 hover:bg-white/10 p-2 rounded"><i class='bx bx-home'></i> Dashboard</a>
+      <a href="sim-request-form.html" class="flex items-center gap-2 hover:bg-white/10 p-2 rounded"><i class='bx bx-plus-circle'></i> Raise Request</a>
+      <a href="/assign-sim.html" class="flex items-center gap-2 hover:bg-white/10 p-2 rounded"><i class='bx bx-check-shield'></i> Assign SIM</a>
+      <a href="/add-sim.html" class="flex items-center gap-2 hover:bg-white/10 p-2 rounded"><i class='bx bx-plus'></i> Add SIM</a>
+      <a href="#requests" class="flex items-center gap-2 hover:bg-white/10 p-2 rounded"><i class='bx bx-history'></i> Request History</a>
+      <button onclick="toggleTheme()" class="flex items-center gap-2 bg-white/10 hover:bg-white/20 p-2 rounded">
+        <i class='bx bx-adjust'></i> Toggle Theme
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-8 space-y-6">
+    <div class="flex justify-between items-center">
+      <h2 class="text-2xl font-semibold">Welcome, HR 👩‍💼</h2>
+      <div class="bg-white dark:bg-gray-800 px-4 py-2 rounded shadow text-gray-600 dark:text-gray-300">Role: HR</div>
+    </div>
+
+    <section id="requests" class="mt-10">
+      <h3 class="text-xl font-semibold mb-4">HOD Approved SIM Requests</h3>
+      <div class="overflow-x-auto rounded shadow">
+        <table class="min-w-full text-sm">
+          <thead class="bg-[#002f4b] text-white">
+            <tr>
+              <th class="text-left p-2">Employee</th>
+              <th class="text-left p-2">Mobile</th>
+              <th class="text-left p-2">Type</th>
+              <th class="text-left p-2">HOD Status</th>
+              <th class="text-left p-2">Status</th>
+              <th class="text-left p-2">Date</th>
+              <th class="text-left p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="hrTable" class="bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
+            <!-- Data will load here -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const token = localStorage.getItem("token");
+
+    async function loadRequests() {
+      try {
+        const res = await fetch('http://localhost:5000/api/requests', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+        const tbody = document.getElementById('hrTable');
+        tbody.innerHTML = '';
+
+        data.forEach(req => {
+          if (req.status !== 'HR Pending') return;
+
+          const hodStatus = req.hod?.status === 'Approved' ? `<span class="text-green-700 text-sm">✅ Approved by HOD</span>` : '—';
+
+          const row = `
+            <tr>
+              <td class="p-2">${req.employeeName}</td>
+              <td class="p-2">${req.mobile}</td>
+              <td class="p-2">${req.requestType}</td>
+              <td class="p-2">${hodStatus}</td>
+              <td class="p-2">${req.status}</td>
+              <td class="p-2">${new Date(req.createdAt).toLocaleDateString()}</td>
+              <td class="p-2">
+                <button onclick="redirectToForward('${req._id}')" class="text-green-600 hover:underline">Approve</button> |
+                <button onclick="rejectRequest('${req._id}')" class="text-red-600 hover:underline">Reject</button>
+              </td>
+            </tr>`;
+          tbody.insertAdjacentHTML('beforeend', row);
+        });
+      } catch (err) {
+        console.error('Failed to load requests:', err);
+      }
+    }
+
+    function redirectToForward(requestId) {
+      window.location.href = `/sim-request-form.html?id=${requestId}`;
+    }
+
+    async function rejectRequest(id) {
+      const url = `http://localhost:5000/api/requests/${id}/reject`;
+      try {
+        const res = await fetch(url, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await res.json();
+        if (res.ok) {
+          alert("❌ Request rejected");
+          loadRequests();
+        } else {
+          alert(`❌ ${result.error || 'Failed to reject'}`);
+        }
+      } catch (err) {
+        alert(`❌ Error rejecting request`);
+        console.error(err);
+      }
+    }
+
+    window.onload = loadRequests;
+  </script>
+</body>
+</html>

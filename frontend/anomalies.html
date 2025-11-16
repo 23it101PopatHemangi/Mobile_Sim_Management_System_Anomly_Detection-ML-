@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIM Anomaly Detection Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #667eea;
+      --primary-dark: #764ba2;
+      --success: #1abc9c;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --info: #3498db;
+      --light: #ecf0f1;
+      --dark: #2c3e50;
+      --white: #ffffff;
+      --shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 30px 20px;
+      color: var(--dark);
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      background: var(--white);
+      border-radius: 25px;
+      padding: 50px;
+      box-shadow: var(--shadow-lg);
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 50px;
+      padding-bottom: 30px;
+      border-bottom: 3px solid var(--light);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .header-icon {
+      font-size: 3.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header h1 {
+      color: var(--dark);
+      font-size: 3rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .header p {
+      color: #7f8c8d;
+      font-size: 1.1rem;
+      margin-top: 8px;
+    }
+
+    .header-search {
+      display: flex;
+      align-items: center;
+      background: var(--light);
+      padding: 12px 20px;
+      border-radius: 50px;
+      gap: 10px;
+      font-size: 2rem;
+      color: var(--primary);
+      transition: all 0.3s ease;
+    }
+
+    .header-search:hover {
+      background: #dfe6e9;
+      transform: scale(1.05);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      margin-bottom: 50px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 35px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.15);
+      transition: left 0.6s ease;
+      z-index: 1;
+    }
+
+    .stat-card:hover::before {
+      left: 100%;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-15px) scale(1.02);
+      box-shadow: 0 30px 70px rgba(102, 126, 234, 0.35);
+    }
+
+    .stat-card-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .stat-card.anomalies {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .stat-card.anomalies:hover {
+      box-shadow: 0 30px 70px rgba(245, 87, 108, 0.35);
+    }
+
+    .stat-card.normal {
+      background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+    }
+
+    .stat-card.normal:hover {
+      box-shadow: 0 30px 70px rgba(26, 188, 156, 0.35);
+    }
+
+    .stat-card.recent {
+      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    }
+
+    .stat-card.recent:hover {
+      box-shadow: 0 30px 70px rgba(243, 156, 18, 0.35);
+    }
+
+    .stat-card.percentage {
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    }
+
+    .stat-card.percentage:hover {
+      box-shadow: 0 30px 70px rgba(52, 152, 219, 0.35);
+    }
+
+    .stat-icon {
+      font-size: 2.8rem;
+      margin-bottom: 15px;
+      opacity: 0.95;
+    }
+
+    .stat-number {
+      font-size: 3.2rem;
+      font-weight: 900;
+      margin-bottom: 12px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-label {
+      font-size: 1rem;
+      opacity: 0.95;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .controls-section {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      padding: 35px;
+      border-radius: 20px;
+      margin-bottom: 40px;
+      border: 2px solid var(--light);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 15px 28px;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+      z-index: 1;
+    }
+
+    .btn:active::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn > * {
+      position: relative;
+      z-index: 2;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--info), #2980b9);
+      color: white;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--success), #16a085);
+      color: white;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--danger), #c0392b);
+      color: white;
+    }
+
+    .btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .upload-section {
+      background: white;
+      border: 3px dashed var(--primary);
+      border-radius: 20px;
+      padding: 35px;
+      margin-bottom: 40px;
+      transition: all 0.3s ease;
+    }
+
+    .upload-section:hover {
+      border-color: var(--primary-dark);
+      background: rgba(102, 126, 234, 0.03);
+      transform: translateY(-3px);
+    }
+
+    .upload-section h3 {
+      color: var(--dark);
+      margin-bottom: 25px;
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .form-group label {
+      font-weight: 700;
+      color: var(--dark);
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .form-group input[type="file"],
+    .form-group input[type="number"] {
+      padding: 14px 16px;
+      border: 2px solid var(--light);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      background: var(--white);
+    }
+
+    .form-group input[type="file"]:hover,
+    .form-group input[type="number"]:hover {
+      border-color: var(--primary);
+      background: rgba(102, 126, 234, 0.03);
+    }
+
+    .form-group input[type="file"]:focus,
+    .form-group input[type="number"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-help {
+      color: #7f8c8d;
+      font-size: 0.85rem;
+      margin-top: 12px;
+      line-height: 1.7;
+      background: var(--light);
+      padding: 16px;
+      border-radius: 10px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .upload-help code {
+      background: var(--white);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .table-container {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: fadeIn 0.5s ease-out;
+      border: 2px solid var(--light);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .table-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      padding: 35px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .table-header h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .table-search input {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 0.95rem;
+      width: 250px;
+      transition: all 0.3s ease;
+    }
+
+    .table-search input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .table-search input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      padding: 22px 18px;
+      text-align: left;
+      font-weight: 800;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 3px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .table td {
+      padding: 20px 18px;
+      border-bottom: 2px solid #f0f0f0;
+      font-size: 0.95rem;
+      color: var(--dark);
+    }
+
+    .table tbody tr {
+      transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+      background-color: rgba(102, 126, 234, 0.05);
+      box-shadow: inset 0 0 0 2px rgba(102, 126, 234, 0.1);
+      transform: scale(1.01);
+    }
+
+    .table tbody tr.anomaly {
+      background: linear-gradient(90deg, #ffe5e5 0%, transparent 100%);
+      border-left: 5px solid var(--danger);
+    }
+
+    .table tbody tr.anomaly:hover {
+      background: linear-gradient(90deg, #ffd0d0 0%, rgba(102, 126, 234, 0.05) 100%);
+    }
+
+    .anomaly-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      min-width: 90px;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .anomaly-badge.yes {
+      background: linear-gradient(135deg, var(--danger), #c0392b);
+      color: white;
+      box-shadow: 0 5px 15px rgba(231, 76, 60, 0.35);
+    }
+
+    .anomaly-badge.no {
+      background: linear-gradient(135deg, var(--success), #16a085);
+      color: white;
+      box-shadow: 0 5px 15px rgba(26, 188, 156, 0.35);
+    }
+
+    .sim-id {
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .operator-badge {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .operator-badge.VI {
+      background: #ff6b9d;
+      color: white;
+    }
+
+    .operator-badge.Jio {
+      background: #00b894;
+      color: white;
+    }
+
+    .operator-badge.Airtel {
+      background: #f39c12;
+      color: white;
+    }
+
+    .operator-badge.BSNL {
+      background: #3498db;
+      color: white;
+    }
+
+    .loading::before {
+      content: '';
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--light);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 15px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 40px;
+      color: #7f8c8d;
+      font-size: 1.1rem;
+    }
+
+    .alert {
+      padding: 18px 24px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-weight: 700;
+      animation: slideInDown 0.4s ease-out;
+      border-left: 5px solid;
+    }
+
+    @keyframes slideInDown {
+      from { opacity: 0; transform: translateY(-25px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .alert.error {
+      background: linear-gradient(135deg, #ffe5e5, #ffd0d0);
+      color: #c0392b;
+      border-left-color: #e74c3c;
+    }
+
+    .alert.success {
+      background: linear-gradient(135deg, #e8f8f5, #d5f4e6);
+      color: #0e6251;
+      border-left-color: #1abc9c;
+    }
+
+    .alert.warning {
+      background: linear-gradient(135deg, #fef5e7, #fce8c3);
+      color: #a04000;
+      border-left-color: #f39c12;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      animation: fadeIn 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 45px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 650px;
+      box-shadow: var(--shadow-lg);
+      animation: slideUp 0.4s ease-out;
+      border: 2px solid var(--light);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-content h3 {
+      color: var(--dark);
+      margin-bottom: 30px;
+      font-size: 1.7rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .modal-grid label {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-weight: 700;
+      color: var(--dark);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .modal-grid input,
+    .modal-grid select {
+      padding: 14px 16px;
+      border: 2px solid var(--light);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: all 0.3s ease;
+      background: var(--white);
+    }
+
+    .modal-grid input:focus,
+    .modal-grid select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: flex-end;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 40px;
+      color: #7f8c8d;
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.4;
+    }
+
+    .empty-state p {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 30px 20px;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.2rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .table-container {
+        overflow-x: auto;
+      }
+
+      .upload-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        width: 95%;
+        margin: 30% auto;
+        padding: 30px;
+      }
+
+      .table-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+
+      .table-search input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header Section -->
+    <div class="header">
+      <div class="header-left">
+        <div class="header-icon"><i class="fas fa-shield-alt"></i></div>
+        <div>
+          <h1>Anomaly Detection</h1>
+          <p>Real-time SIM monitoring & fraud detection</p>
+        </div>
+      </div>
+      <div class="header-search">
+        <i class="fas fa-search"></i>
+      </div>
+    </div>
+
+    <!-- Message Container -->
+    <div id="messageContainer"></div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card anomalies">
+        <div class="stat-card-content">
+          <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
+          <div class="stat-number" id="anomalyCount">0</div>
+          <div class="stat-label">Anomalies Detected</div>
+        </div>
+      </div>
+      <div class="stat-card normal">
+        <div class="stat-card-content">
+          <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-number" id="normalCount">0</div>
+          <div class="stat-label">Normal Records</div>
+        </div>
+      </div>
+      <div class="stat-card recent">
+        <div class="stat-card-content">
+          <div class="stat-icon"><i class="fas fa-clock"></i></div>
+          <div class="stat-number" id="recentCount">0</div>
+          <div class="stat-label">Last 24 Hours</div>
+        </div>
+      </div>
+      <div class="stat-card percentage">
+        <div class="stat-card-content">
+          <div class="stat-icon"><i class="fas fa-chart-pie"></i></div>
+          <div class="stat-number" id="anomalyPercentage">0%</div>
+          <div class="stat-label">Anomaly Rate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls Section -->
+    <div class="controls-section">
+      <div class="controls">
+        <button class="btn btn-primary" onclick="runDetection()"><i class="fas fa-play-circle"></i> Run Detection</button>
+        <button class="btn btn-secondary" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <button class="btn btn-success" onclick="exportData()"><i class="fas fa-download"></i> Export JSON</button>
+        <button class="btn btn-danger" onclick="clearData()"><i class="fas fa-trash-alt"></i> Clear All</button>
+        <button class="btn btn-primary" onclick="openDummyModal()"><i class="fas fa-plus-circle"></i> Add Record</button>
+      </div>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+      <h3><i class="fas fa-file-upload"></i> Upload & Process Data</h3>
+      <div class="upload-grid">
+        <div class="form-group">
+          <label><i class="fas fa-file-csv"></i> Select File</label>
+          <input type="file" id="dataFile" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-sliders-h"></i> Contamination Rate</label>
+          <input type="number" id="contamination" step="0.01" min="0" max="0.5" value="0.05" />
+        </div>
+        <div style="display: flex; gap: 10px; align-items: flex-end;">
+          <button class="btn btn-primary" onclick="predictFromFile()"><i class="fas fa-brain"></i> Predict</button>
+          <button class="btn btn-secondary" onclick="trainFromFile()"><i class="fas fa-graduation-cap"></i> Train Model</button>
+        </div>
+      </div>
+      <div class="upload-help">
+        <strong><i class="fas fa-info-circle"></i> Required Columns:</strong> call_count_outgoing, call_count_incoming, avg_call_duration, sms_count_sent, sms_count_received, avg_daily_usage, usage_variance, status, registered_location, current_location, operator | <strong>Optional:</strong> sim_id, customer_id, Phone no
+      </div>
+    </div>
+
+    <!-- Quick Add SIM Form -->
+    <div class="upload-section" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid var(--primary); margin-bottom: 40px;">
+      <h3><i class="fas fa-keyboard"></i> Quick Add SIM Record</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 20px;">
+        <div class="form-group">
+          <label><i class="fas fa-id-card"></i> SIM ID</label>
+          <input id="q_sim_id" type="text" placeholder="VI1001" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-user"></i> Customer ID</label>
+          <input id="q_customer_id" type="text" placeholder="CUST0001" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-phone"></i> Phone Number</label>
+          <input id="q_phone" type="text" placeholder="9876543210" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-mobile-alt"></i> Operator</label>
+          <select id="q_operator">
+            <option value="VI">Vodafone Idea (VI)</option>
+            <option value="Jio">Jio</option>
+            <option value="Airtel">Airtel</option>
+            <option value="BSNL">BSNL</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-toggle-on"></i> Status</label>
+          <select id="q_status">
+            <option value="Active" selected>Active</option>
+            <option value="Deactivated">Deactivated</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-map-marker-alt"></i> Registered Location</label>
+          <input id="q_reg_loc" type="text" placeholder="Mumbai" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-location-arrow"></i> Current Location</label>
+          <input id="q_cur_loc" type="text" placeholder="Mumbai" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-arrow-circle-up"></i> Outgoing Calls</label>
+          <input id="q_out" type="number" value="30" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-arrow-circle-down"></i> Incoming Calls</label>
+          <input id="q_in" type="number" value="20" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-clock"></i> Avg Call Duration (min)</label>
+          <input id="q_duration" type="number" step="0.01" value="3.5" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-comment-alt"></i> SMS Sent</label>
+          <input id="q_sms_s" type="number" value="5" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-inbox"></i> SMS Received</label>
+          <input id="q_sms_r" type="number" value="5" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-database"></i> Avg Daily Usage (MB)</label>
+          <input id="q_usage" type="number" step="0.01" value="800" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-chart-bar"></i> Usage Variance</label>
+          <input id="q_var" type="number" step="0.01" value="1000" />
+        </div>
+      </div>
+      <div style="display: flex; gap: 15px; margin-top: 20px; justify-content: flex-end;">
+        <button class="btn btn-danger" onclick="clearQuickAdd()"><i class="fas fa-redo"></i> Clear</button>
+        <button class="btn btn-success" onclick="submitQuickAdd()"><i class="fas fa-save"></i> Predict & Save</button>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-container">
+      <div class="table-header">
+        <h2><i class="fas fa-table"></i> Anomaly Records</h2>
+        <div class="table-search">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search records..." style="border: none; background: transparent; color: white; padding: 5px; font-size: 0.95rem;" />
+        </div>
+      </div>
+      <table class="table" id="anomalyTable">
+        <thead>
+          <tr>
+            <th><i class="fas fa-id-card"></i> SIM ID</th>
+            <th><i class="fas fa-user"></i> Customer ID</th>
+            <th><i class="fas fa-phone"></i> Phone</th>
+            <th><i class="fas fa-mobile-alt"></i> Operator</th>
+            <th><i class="fas fa-chart-line"></i> Score</th>
+            <th><i class="fas fa-exclamation-triangle"></i> Status</th>
+            <th><i class="fas fa-calendar"></i> Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="7" class="loading"><i class="fas fa-spinner"></i> Loading data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Record Modal -->
+  <div class="modal" id="dummyModal">
+    <div class="modal-content">
+      <h3><i class="fas fa-plus-square"></i> Add New Record</h3>
+      <div class="modal-grid">
+        <label><i class="fas fa-id-card"></i> SIM ID
+          <input id="d_sim_id" type="text" placeholder="VI1001" />
+        </label>
+        <label><i class="fas fa-user"></i> Customer ID
+          <input id="d_customer_id" type="text" placeholder="CUST0001" />
+        </label>
+        <label><i class="fas fa-phone"></i> Phone Number
+          <input id="d_phone" type="text" placeholder="9876543210" />
+        </label>
+        <label><i class="fas fa-mobile-alt"></i> Operator
+          <select id="d_operator">
+            <option value="VI">Vodafone Idea (VI)</option>
+            <option value="Jio">Jio</option>
+            <option value="Airtel">Airtel</option>
+            <option value="BSNL">BSNL</option>
+          </select>
+        </label>
+        <label><i class="fas fa-toggle-on"></i> Status
+          <select id="d_status">
+            <option value="Active" selected>Active</option>
+            <option value="Deactivated">Deactivated</option>
+          </select>
+        </label>
+        <label><i class="fas fa-map-marker-alt"></i> Registered Location
+          <input id="d_reg_loc" type="text" placeholder="Mumbai" />
+        </label>
+        <label><i class="fas fa-location-arrow"></i> Current Location
+          <input id="d_cur_loc" type="text" placeholder="Mumbai" />
+        </label>
+        <label><i class="fas fa-arrow-circle-up"></i> Outgoing Calls
+          <input id="d_out" type="number" value="30" />
+        </label>
+        <label><i class="fas fa-arrow-circle-down"></i> Incoming Calls
+          <input id="d_in" type="number" value="20" />
+        </label>
+        <label><i class="fas fa-clock"></i> Avg Call Duration (min)
+          <input id="d_duration" type="number" step="0.01" value="3.5" />
+        </label>
+        <label><i class="fas fa-comment-alt"></i> SMS Sent
+          <input id="d_sms_s" type="number" value="5" />
+        </label>
+        <label><i class="fas fa-inbox"></i> SMS Received
+          <input id="d_sms_r" type="number" value="5" />
+        </label>
+        <label><i class="fas fa-database"></i> Avg Daily Usage (MB)
+          <input id="d_usage" type="number" step="0.01" value="800" />
+        </label>
+        <label><i class="fas fa-chart-bar"></i> Usage Variance
+          <input id="d_var" type="number" step="0.01" value="1000" />
+        </label>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn btn-danger" onclick="closeDummyModal()"><i class="fas fa-times"></i> Cancel</button>
+        <button class="btn btn-success" onclick="submitDummy()"><i class="fas fa-save"></i> Predict & Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ML_API_URL = 'http://localhost:5001';
+    let allAnomalies = [];
+
+    async function init() {
+      await loadStats();
+      await loadAnomalies();
+      setInterval(async () => {
+        await loadStats();
+        await loadAnomalies();
+      }, 30000);
+    }
+
+    async function loadStats() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/anomalies/stats', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const stats = await response.json();
+          document.getElementById('anomalyCount').textContent = stats.anomaly_count;
+          document.getElementById('normalCount').textContent = stats.normal_count;
+          document.getElementById('recentCount').textContent = stats.recent_anomalies_24h;
+          document.getElementById('anomalyPercentage').textContent = stats.anomaly_percentage + '%';
+        }
+      } catch (err) {
+        console.error('Failed to load stats:', err);
+      }
+    }
+
+    async function loadAnomalies() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/anomalies', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          allAnomalies = await response.json();
+          renderTable();
+        } else {
+          throw new Error('Failed to fetch anomalies');
+        }
+      } catch (err) {
+        console.error('Failed to load anomalies:', err);
+        showMessage('Failed to load anomaly data', 'error');
+        document.querySelector('#anomalyTable tbody').innerHTML = 
+          '<tr><td colspan="7" class="error">Error loading data</td></tr>';
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.querySelector('#anomalyTable tbody');
+      if (allAnomalies.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon"><i class="fas fa-inbox"></i></div><p>No anomalies found</p></div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = allAnomalies.map(anomaly => {
+        const isAnomaly = anomaly.is_anomaly;
+        const operatorClass = `operator-badge ${anomaly.operator || 'VI'}`;
+        return `
+          <tr class="${isAnomaly ? 'anomaly' : ''}">
+            <td class="sim-id">${anomaly.sim_id || 'N/A'}</td>
+            <td>${anomaly.customer_id || 'N/A'}</td>
+            <td>${anomaly.phone_no || 'N/A'}</td>
+            <td><span class="${operatorClass}">${anomaly.operator || 'N/A'}</span></td>
+            <td><strong>${(anomaly.anomaly_score || 0).toFixed(3)}</strong></td>
+            <td>
+              <span class="anomaly-badge ${isAnomaly ? 'yes' : 'no'}">
+                <i class="fas fa-${isAnomaly ? 'exclamation-circle' : 'check-circle'}"></i>
+                ${isAnomaly ? 'Anomaly' : 'Normal'}
+              </span>
+            </td>
+            <td><small>${new Date(anomaly.timestamp).toLocaleString()}</small></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function runDetection() {
+      const btn = event.target;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '🔄 Running...';
+      btn.disabled = true;
+      
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/anomalies/detect', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          showMessage(`Detection completed! Found ${result.anomalies_found} anomalies. Results saved to ${result.output_file}`, 'success');
+          await loadStats();
+          await loadAnomalies();
+        } else {
+          const error = await response.json();
+          throw new Error(error.error || 'Detection failed');
+        }
+      } catch (err) {
+        console.error('Detection failed:', err);
+        showMessage('Anomaly detection failed: ' + err.message, 'error');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    async function refreshData() {
+      await loadStats();
+      await loadAnomalies();
+      showMessage('Data refreshed successfully', 'success');
+    }
+
+    function exportData() {
+      const dataToExport = {
+        timestamp: new Date().toISOString(),
+        total_records: allAnomalies.length,
+        anomaly_count: allAnomalies.filter(a => a.is_anomaly).length,
+        data: allAnomalies
+      };
+      
+      const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `anomaly_export_${new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showMessage('Data exported successfully', 'success');
+    }
+
+    async function clearData() {
+      if (!confirm('Are you sure you want to clear all anomaly records?')) return;
+      
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/anomalies', {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          showMessage(`Cleared ${result.deleted_count} anomaly records`, 'success');
+          await loadStats();
+          await loadAnomalies();
+        } else {
+          throw new Error('Failed to clear data');
+        }
+      } catch (err) {
+        console.error('Clear failed:', err);
+        showMessage('Failed to clear data: ' + err.message, 'error');
+      }
+    }
+
+    function showMessage(message, type) {
+      const container = document.getElementById('messageContainer');
+      const div = document.createElement('div');
+      const icons = {
+        error: 'times-circle',
+        success: 'check-circle',
+        warning: 'exclamation-triangle'
+      };
+      div.className = `alert ${type}`;
+      div.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}"></i> <span>${message}</span>`;
+      container.appendChild(div);
+      setTimeout(() => div.remove(), 5000);
+    }
+
+    // Predict from uploaded file (CSV/XLSX) using ML API directly
+    async function predictFromFile() {
+      const fileInput = document.getElementById('dataFile');
+      if (!fileInput.files || fileInput.files.length === 0) {
+        showMessage('Please choose a CSV/XLSX file first.', 'error');
+        return;
+      }
+      const file = fileInput.files[0];
+      const form = new FormData();
+      form.append('file', file);
+      try {
+        const res = await fetch(`${ML_API_URL}/api/ml/predict`, {
+          method: 'POST',
+          body: form
+        });
+        if (!res.ok) throw new Error('Prediction failed');
+        const data = await res.json();
+        // Merge results into on-screen table and persist to DB
+        const results = data.results || [];
+        if (results.length === 0) {
+          showMessage('No rows processed from file.', 'error');
+          return;
+        }
+        // Normalize timestamps to Date strings if missing
+        results.forEach(r => {
+          if (!r.timestamp) r.timestamp = new Date().toISOString();
+        });
+        // Persist to backend so stats & list update globally
+        try {
+          const token = localStorage.getItem('token');
+          const saveRes = await fetch('/api/anomalies/import', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ results })
+          });
+          if (!saveRes.ok) {
+            const err = await saveRes.json().catch(()=>({error:'Import failed'}));
+            throw new Error(err.error || 'Failed to save results');
+          }
+        } catch (err) {
+          console.error('Persist failed:', err);
+          showMessage('Saved locally, but failed to persist to server: ' + err.message, 'error');
+        }
+
+        // Refresh from server to reflect saved results
+        await loadStats();
+        await loadAnomalies();
+        showMessage(`Predicted ${results.length} records from file and saved to server. Anomalies: ${results.filter(r=>r.is_anomaly).length}`, 'success');
+      } catch (e) {
+        console.error(e);
+        showMessage('Prediction failed: ' + e.message, 'error');
+      }
+    }
+
+    // Train the model from uploaded file
+    async function trainFromFile() {
+      const fileInput = document.getElementById('dataFile');
+      if (!fileInput.files || fileInput.files.length === 0) {
+        showMessage('Please choose a CSV/XLSX file first.', 'error');
+        return;
+      }
+      const file = fileInput.files[0];
+      const contamination = parseFloat(document.getElementById('contamination').value || '0.05');
+      const form = new FormData();
+      form.append('file', file);
+      form.append('contamination', contamination);
+      try {
+        const res = await fetch(`${ML_API_URL}/api/ml/train`, {
+          method: 'POST',
+          body: form
+        });
+        if (!res.ok) throw new Error('Training failed');
+        const data = await res.json();
+        showMessage(`Model trained successfully. Contamination=${data.contamination || contamination}.`, 'success');
+      } catch (e) {
+        console.error(e);
+        showMessage('Training failed: ' + e.message, 'error');
+      }
+    }
+
+    init();
+
+    // ===== Quick Add Form Functions =====
+    function clearQuickAdd() {
+      document.getElementById('q_sim_id').value = '';
+      document.getElementById('q_customer_id').value = '';
+      document.getElementById('q_phone').value = '';
+      document.getElementById('q_operator').value = 'VI';
+      document.getElementById('q_status').value = 'Active';
+      document.getElementById('q_reg_loc').value = '';
+      document.getElementById('q_cur_loc').value = '';
+      document.getElementById('q_out').value = '30';
+      document.getElementById('q_in').value = '20';
+      document.getElementById('q_duration').value = '3.5';
+      document.getElementById('q_sms_s').value = '5';
+      document.getElementById('q_sms_r').value = '5';
+      document.getElementById('q_usage').value = '800';
+      document.getElementById('q_var').value = '1000';
+    }
+
+    async function submitQuickAdd() {
+      const rec = {
+        sim_id: document.getElementById('q_sim_id').value || 'SIM_QUICK',
+        customer_id: document.getElementById('q_customer_id').value || '',
+        'Phone no': document.getElementById('q_phone').value || '',
+        operator: document.getElementById('q_operator').value || 'VI',
+        status: document.getElementById('q_status').value || 'Active',
+        registered_location: document.getElementById('q_reg_loc').value || 'Mumbai',
+        current_location: document.getElementById('q_cur_loc').value || 'Mumbai',
+        call_count_outgoing: Number(document.getElementById('q_out').value || 0),
+        call_count_incoming: Number(document.getElementById('q_in').value || 0),
+        avg_call_duration: Number(document.getElementById('q_duration').value || 0),
+        sms_count_sent: Number(document.getElementById('q_sms_s').value || 0),
+        sms_count_received: Number(document.getElementById('q_sms_r').value || 0),
+        avg_daily_usage: Number(document.getElementById('q_usage').value || 0),
+        usage_variance: Number(document.getElementById('q_var').value || 0)
+      };
+
+      try {
+        // Predict via ML API using the trained model
+        const mlRes = await fetch(`${ML_API_URL}/api/ml/batch-predict`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ records: [rec] })
+        });
+        if (!mlRes.ok) throw new Error('ML prediction failed');
+        const mlData = await mlRes.json();
+        const results = mlData.results || [];
+        if (results.length === 0) throw new Error('No result returned');
+
+        // Persist to backend
+        const token = localStorage.getItem('token');
+        if (!token) {
+          showMessage('Session expired. Please login again.', 'error');
+          window.location.href = `/login.html?redirect=anomalies.html`;
+          return;
+        }
+        const saveRes = await fetch('/api/anomalies/import', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ results })
+        });
+        if (!saveRes.ok) {
+          if (saveRes.status === 401 || saveRes.status === 403) {
+            const txt = await saveRes.text().catch(()=> '');
+            showMessage(`Unauthorized: ${txt || 'Please login as Admin'}`, 'error');
+            window.location.href = `/login.html?redirect=anomalies.html`;
+            return;
+          }
+          throw new Error(`Failed to save to server (HTTP ${saveRes.status})`);
+        }
+
+        await loadStats();
+        await loadAnomalies();
+        clearQuickAdd();
+        showMessage('Record predicted and saved successfully!', 'success');
+      } catch (err) {
+        console.error(err);
+        showMessage('Failed: ' + err.message, 'error');
+      }
+    }
+
+    // ===== Dummy record modal handlers =====
+    function openDummyModal() {
+      document.getElementById('dummyModal').style.display = 'block';
+    }
+    function closeDummyModal() {
+      document.getElementById('dummyModal').style.display = 'none';
+    }
+    window.addEventListener('click', function(e){
+      const modal = document.getElementById('dummyModal');
+      if (e.target === modal) closeDummyModal();
+    });
+
+    async function submitDummy() {
+      const rec = {
+        sim_id: document.getElementById('d_sim_id').value || 'SIM_DUMMY',
+        customer_id: document.getElementById('d_customer_id').value || '',
+        'Phone no': document.getElementById('d_phone').value || '',
+        operator: document.getElementById('d_operator').value || 'VI',
+        status: document.getElementById('d_status').value || 'Active',
+        registered_location: document.getElementById('d_reg_loc').value || 'Mumbai',
+        current_location: document.getElementById('d_cur_loc').value || 'Mumbai',
+        call_count_outgoing: Number(document.getElementById('d_out').value || 0),
+        call_count_incoming: Number(document.getElementById('d_in').value || 0),
+        avg_call_duration: Number(document.getElementById('d_duration').value || 0),
+        sms_count_sent: Number(document.getElementById('d_sms_s').value || 0),
+        sms_count_received: Number(document.getElementById('d_sms_r').value || 0),
+        avg_daily_usage: Number(document.getElementById('d_usage').value || 0),
+        usage_variance: Number(document.getElementById('d_var').value || 0)
+      };
+
+      try {
+        // Predict via ML API using the trained model
+        const mlRes = await fetch(`${ML_API_URL}/api/ml/batch-predict`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ records: [rec] })
+        });
+        if (!mlRes.ok) throw new Error('ML prediction failed');
+        const mlData = await mlRes.json();
+        const results = mlData.results || [];
+        if (results.length === 0) throw new Error('No result returned');
+
+        // Persist to backend
+        const token = localStorage.getItem('token');
+        if (!token) {
+          showMessage('Session expired. Please login again.', 'error');
+          window.location.href = `/login.html?redirect=anomalies.html`;
+          return;
+        }
+        const saveRes = await fetch('/api/anomalies/import', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ results })
+        });
+        if (!saveRes.ok) {
+          if (saveRes.status === 401 || saveRes.status === 403) {
+            const txt = await saveRes.text().catch(()=> '');
+            showMessage(`Unauthorized: ${txt || 'Please login as Admin'}`, 'error');
+            window.location.href = `/login.html?redirect=anomalies.html`;
+            return;
+          }
+          throw new Error(`Failed to save to server (HTTP ${saveRes.status})`);
+        }
+
+        await loadStats();
+        await loadAnomalies();
+        closeDummyModal();
+        showMessage('Dummy record predicted and saved successfully.', 'success');
+      } catch (err) {
+        console.error(err);
+        showMessage('Failed: ' + err.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

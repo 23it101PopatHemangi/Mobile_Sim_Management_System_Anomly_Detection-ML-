@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add SIM to Inventory - Nayara</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+    document.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    });
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+  </script>
+  <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white min-h-screen p-6 flex items-center justify-center">
+
+  <div class="w-full max-w-lg bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg space-y-6">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">Add SIM to Inventory</h1>
+      <button onclick="toggleTheme()" class="bg-[#002f4b] text-white px-4 py-1 rounded hover:bg-[#01405e] flex items-center gap-2 text-sm">
+        <i class="bx bx-adjust"></i> Toggle
+      </button>
+    </div>
+
+    <form id="addSimForm" class="space-y-5">
+      <div>
+        <label class="block font-medium mb-1">SIM Number</label>
+        <input type="text" name="simNumber" placeholder="e.g., 8934567890123456" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white" required>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1">Provider</label>
+        <select name="provider" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white" required>
+          <option value="">-- Select Provider --</option>
+          <option>Jio</option>
+          <option>Airtel</option>
+          <option>Vi</option>
+          <option>BSNL</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1">Status</label>
+        <select name="status" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white" required>
+          <option value="">-- Select Status --</option>
+          <option>Available</option>
+          <option>Assigned</option>
+          <option>Deactivated</option>
+        </select>
+      </div>
+
+      <button type="submit" class="w-full bg-[#002f4b] hover:bg-[#01405e] text-white py-2 rounded text-lg font-semibold">
+        Add SIM
+      </button>
+    </form>
+
+    <div id="responseMsg" class="text-sm text-center mt-2"></div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+
+    document.getElementById('addSimForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = Object.fromEntries(new FormData(e.target).entries());
+
+      const res = await fetch('/api/inventory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await res.json();
+      const msg = document.getElementById('responseMsg');
+      msg.textContent = res.ok ? '✅ SIM added successfully!' : `❌ ${data.error || 'Failed to add SIM'}`;
+      msg.className = res.ok ? 'text-green-500' : 'text-red-500';
+    });
+  </script>
+
+</body>
+</html>

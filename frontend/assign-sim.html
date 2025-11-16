@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Assign SIM - Nayara</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+    document.addEventListener("DOMContentLoaded", () => {
+      if (localStorage.getItem("theme") === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    });
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle("dark");
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+    }
+  </script>
+  <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white min-h-screen p-6 flex items-center justify-center transition-all">
+
+  <div class="w-full max-w-xl bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg space-y-6">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">Assign SIM</h1>
+      <button onclick="toggleTheme()" class="bg-[#002f4b] text-white px-4 py-1 rounded hover:bg-[#01405e] text-sm flex items-center gap-2">
+        <i class="bx bx-adjust"></i> Toggle
+      </button>
+    </div>
+
+    <form id="assignSimForm" class="space-y-5">
+      <div>
+        <label class="block font-medium mb-1">Select SIM Request</label>
+        <select id="requestSelect" class="w-full border px-3 py-2 rounded dark:bg-gray-700 dark:text-white" required>
+          <option value="">-- Choose Request --</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1">Select Available SIM</label>
+        <select id="simSelect" class="w-full border px-3 py-2 rounded dark:bg-gray-700 dark:text-white" required>
+          <option value="">-- Choose SIM --</option>
+        </select>
+      </div>
+
+      <button type="submit" class="w-full bg-[#002f4b] text-white py-2 rounded hover:bg-[#01405e]">Assign SIM</button>
+    </form>
+
+    <div id="message" class="text-sm mt-3 text-center font-medium"></div>
+  </div>
+
+  <script>
+  const token = localStorage.getItem("token");
+
+  async function fetchRequests() {
+    try {
+      const res = await fetch('/api/requests', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch (err) {
+        const text = await res.text();
+        console.error("⚠️ Not JSON. Response was:", text);
+        throw new Error("Session expired or backend returned HTML.");
+      }
+
+      const approvedRequests = data.filter(req => req.status === 'Approved by Admin');
+      const select = document.getElementById('requestSelect');
+      select.innerHTML = '<option value="">-- Choose Request --</option>';
+
+      approvedRequests.forEach(req => {
+        const option = document.createElement('option');
+        option.value = req._id;
+        option.textContent = `${req.employeeName} - ${req.requestType}`;
+        select.appendChild(option);
+      });
+
+      const preselectId = localStorage.getItem("assignRequestId");
+      if (preselectId) {
+        select.value = preselectId;
+        localStorage.removeItem("assignRequestId");
+      }
+
+    } catch (error) {
+      alert("⚠️ Could not load requests. Please login again.");
+      localStorage.clear();
+      window.location.href = "/login.html";
+    }
+  }
+
+  async function fetchInventory() {
+    try {
+      const res = await fetch('/api/inventory?status=Available');
+      const data = await res.json();
+      const select = document.getElementById("simSelect");
+      select.innerHTML = '<option value="">-- Choose SIM --</option>';
+      data.forEach(sim => {
+        const option = document.createElement("option");
+        option.value = sim._id;
+        option.textContent = `${sim.simNumber} - ${sim.provider}`;
+        select.appendChild(option);
+      });
+    } catch (err) {
+      console.error("Failed to load SIM inventory:", err);
+    }
+  }
+
+  document.getElementById("assignSimForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const simId = document.getElementById("simSelect").value;
+    const requestId = document.getElementById("requestSelect").value;
+
+    try {
+      const res = await fetch(`/api/inventory/assign`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ simId, requestId })
+      });
+
+      const msg = document.getElementById("message");
+      const data = await res.json();
+      msg.textContent = res.ok ? "✅ SIM assigned successfully." : `❌ ${data.error}`;
+      msg.className = res.ok ? "text-green-500" : "text-red-500";
+
+      if (res.ok) {
+        fetchInventory(); // refresh available SIMs
+        document.getElementById("assignSimForm").reset();
+      }
+    } catch (err) {
+      console.error("❌ Assign SIM failed:", err);
+      alert("Something went wrong while assigning SIM.");
+    }
+  });
+
+  fetchRequests();
+  fetchInventory();
+</script>
+
+</body>
+</html>

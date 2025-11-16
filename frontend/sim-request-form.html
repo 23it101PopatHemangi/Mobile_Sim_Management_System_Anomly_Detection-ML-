@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8" />
+  <title>Raise SIM Request - Nayara</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+    document.addEventListener('DOMContentLoaded', async () => {
+      const html = document.documentElement;
+      if (localStorage.getItem('theme') === 'dark') html.classList.add('dark');
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("Please login first.");
+        window.location.href = "/login.html";
+        return;
+      }
+
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const role = payload.role.toLowerCase();
+      document.getElementById('email').value = payload.email;
+      document.getElementById('email').readOnly = true;
+
+      const params = new URLSearchParams(window.location.search);
+      const reqId = params.get('id');
+
+      if (reqId) {
+        const res = await fetch(`/api/requests/${reqId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const { request } = await res.json();
+
+        if (request) {
+          for (const key in request) {
+            const input = document.querySelector(`[name="${key}"]`);
+            if (input && input.type !== 'file' && request[key]) {
+              input.value = request[key];
+              input.readOnly = true;
+            }
+          }
+
+          if (request.hod) {
+            document.getElementById('hodFields').classList.remove('hidden');
+            document.querySelector('[name="hodName"]').value = request.hod.name;
+            document.querySelector('[name="hodEmail"]').value = request.hod.email;
+            document.querySelector('[name="approvalDate"]').value = request.hod.approvalDate;
+            document.querySelectorAll('[name^="hod"]').forEach(el => el.readOnly = true);
+          }
+
+          document.getElementById('requestId').value = reqId;
+          document.getElementById('submitBtn').textContent = 'Forward to Admin';
+
+          if (role === 'hr') {
+            document.getElementById('documentField').classList.add('hidden');
+            const message = document.createElement('p');
+            message.textContent = "📎 Document already uploaded by Employee.";
+            message.className = "text-sm text-green-700 mt-2 italic";
+            document.getElementById('documentField').parentNode.insertBefore(message, document.getElementById('documentField'));
+          }
+        }
+      } else {
+        if (role === 'employee') {
+          document.getElementById('hodFields').classList.add('hidden');
+        }
+        if (role === 'hr') {
+          document.getElementById('documentField').classList.add('hidden');
+          const message = document.createElement('p');
+          message.textContent = "📎 Document already uploaded by Employee.";
+          message.className = "text-sm text-green-700 mt-2 italic";
+          document.getElementById('documentField').parentNode.insertBefore(message, document.getElementById('documentField'));
+        }
+      }
+    });
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
+    function updateStatus(id) {
+      window.location.href = `/sim-request-form.html?id=${id}`;
+    }
+  </script>
+  <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white transition duration-300 min-h-screen p-6">
+  <!-- Your original form layout goes here -->
+  <div class="max-w-5xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-semibold">Raise SIM Request</h1>
+      <button onclick="toggleTheme()" class="bg-[#002f4b] text-white px-4 py-1 rounded hover:bg-[#01405e] text-sm flex items-center gap-2">
+        <i class='bx bx-adjust'></i> Toggle Theme
+      </button>
+    </div>
+
+    <form id="simRequestForm" enctype="multipart/form-data" class="space-y-6">
+      <input type="hidden" id="requestId" name="requestId" value="" />
+
+      <fieldset class="border border-gray-300 dark:border-gray-600 p-4 rounded">
+        <legend class="text-lg font-semibold">Employee Details</legend>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <input name="employeeName" placeholder="Employee Name*" required class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white">
+          <input name="employeeId" placeholder="Employee ID*" required class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white">
+          <input name="mobile" placeholder="Mobile Number*" required class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white">
+          <input name="designation" placeholder="Designation*" required class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white">
+          <select name="department" required class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white">
+            <option value="">-- Select Department --</option>
+            <option>HR</option>
+            <option>IT</option>
+            <option>REFINERY</option>
+            <option>ADMIN</option>
+          </select>
+          <input id="email" name="email" placeholder="Email ID*" type="email" required class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white">
+        </div>
+      </fieldset>
+
+      <fieldset class="border border-gray-300 dark:border-gray-600 p-4 rounded">
+        <legend class="text-lg font-semibold">Service Provider</legend>
+        <select name="currentProvider" required class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white mt-4">
+          <option value="">-- Select Provider --</option>
+          <option>Jio</option>
+          <option>Airtel</option>
+          <option>Vi</option>
+          <option>BSNL</option>
+        </select>
+      </fieldset>
+
+      <fieldset class="border border-gray-300 dark:border-gray-600 p-4 rounded">
+        <legend class="text-lg font-semibold">Request Details</legend>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <select name="requestType" required class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white">
+            <option value="">-- Select Request Type --</option>
+            <option>SIM Activation</option>
+            <option>SIM Cancellation</option>
+          </select>
+          <select name="duration" required class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white">
+            <option value="">-- Select Duration --</option>
+            <option>1 Month</option>
+            <option>3 Months</option>
+            <option>6 Months</option>
+            <option>1 Year</option>
+          </select>
+          <textarea name="justification" placeholder="Justification*" rows="3" required class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white md:col-span-2"></textarea>
+          <select name="priority" required class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white">
+            <option value="">-- Select Priority --</option>
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <fieldset id="uploadSection" class="border border-gray-300 dark:border-gray-600 p-4 rounded">
+        <legend class="text-lg font-semibold">Upload Aadhaar / PAN</legend>
+        <input name="document" type="file" accept=".pdf,.jpg,.jpeg,.png" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white mt-4" />
+      </fieldset>
+
+      <fieldset id="hodFields" class="border border-gray-300 dark:border-gray-600 p-4 rounded">
+        <legend class="text-lg font-semibold">HOD Approval</legend>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <input name="hodName" placeholder="HOD Name*" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white">
+          <input name="hodEmail" placeholder="HOD Email*" type="email" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white">
+          <input name="approvalDate" placeholder="Approval Date*" type="date" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white md:col-span-2">
+        </div>
+      </fieldset>
+
+      <button id="submitBtn" type="submit" class="w-full bg-[#002f4b] hover:bg-[#01405e] text-white py-2 rounded text-lg font-semibold">
+        Submit Request
+      </button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('simRequestForm');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = localStorage.getItem('token');
+      if (!token) return alert('Unauthorized');
+
+      const formData = new FormData(form);
+      const id = document.getElementById('requestId').value;
+
+      const res = await fetch(id ? `/api/requests/${id}/forward` : '/api/requests', {
+        method: id ? 'PUT' : 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        alert(id ? 'Forwarded to Admin' : 'Request Submitted');
+        window.location.href = "/employee-dashboard.html";
+      } else {
+        alert(result.error || 'Error occurred');
+      }
+    });
+  </script>
+</body>
+</html>

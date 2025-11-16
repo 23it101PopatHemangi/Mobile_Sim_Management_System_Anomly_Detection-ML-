@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8" />
+  <title>SIM Inventory Form - Nayara</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+    document.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    });
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+  </script>
+  <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white transition min-h-screen p-6">
+
+  <div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-xl shadow-xl">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-semibold">SIM Inventory Request</h1>
+      <button onclick="toggleTheme()" class="bg-[#002f4b] text-white px-4 py-1 rounded hover:bg-[#01405e] text-sm flex items-center gap-2">
+        <i class='bx bx-adjust'></i> Toggle Theme
+      </button>
+    </div>
+
+    <form id="simInventoryForm" class="space-y-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label class="block font-medium mb-1">SIM Number *</label>
+      <input id="simNumber" name="simNumber" type="text" class="..." required />
+    </div>
+    <div>
+      <label class="block font-medium mb-1">Mobile Number *</label>
+      <input id="mobileNumber" name="mobileNumber" type="tel" class="..." required />
+    </div>
+    <div>
+      <label class="block font-medium mb-1">Service Provider *</label>
+      <select id="provider" name="provider" class="..." required>
+        <option value="">-- Select Provider --</option>
+        <option>Jio</option>
+        <option>Airtel</option>
+        <option>Vi</option>
+        <option>BSNL</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div>
+      <label class="block font-medium mb-1">SIM Status *</label>
+      <select id="status" name="status" class="..." required>
+        <option value="">-- Select Status --</option>
+        <option>Available</option>
+        <option>Assigned</option>
+        <option>Blocked</option>
+      </select>
+    </div>
+    <div class="md:col-span-2">
+      <label class="block font-medium mb-1">Assign To (Employee Name)</label>
+      <input id="assignedTo" name="assignedTo" type="text" placeholder="Leave blank if unassigned" class="..." />
+    </div>
+  </div>
+
+  <div>
+    <label class="block font-medium mb-1">Remarks</label>
+    <textarea id="remarks" name="remarks" rows="3" class="..." placeholder="Optional remarks..."></textarea>
+  </div>
+
+  <button type="submit" class="...">
+    Submit Inventory Request
+  </button>
+</form>
+
+  </div>
+
+</body>
+<script>
+document.getElementById("simInventoryForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const token = localStorage.getItem("token");
+
+  const payload = {
+    simNumber: document.getElementById("simNumber").value,
+    mobileNumber: document.getElementById("mobileNumber").value,
+    provider: document.getElementById("provider").value,
+    status: document.getElementById("status").value,
+    assignedTo: document.getElementById("assignedTo").value,
+    remarks: document.getElementById("remarks").value
+  };
+
+  try {
+    const res = await fetch("/api/inventory", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert("✅ SIM inventory added successfully!");
+      e.target.reset(); // clear form
+    } else {
+      alert(`❌ ${data.error || "Something went wrong."}`);
+    }
+  } catch (err) {
+    console.error("❌ Network/Server error:", err);
+    alert("❌ Failed to submit SIM inventory.");
+  }
+});
+</script>
+
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HOD Dashboard - Nayara</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet">
+  <script>
+    const user = JSON.parse(localStorage.getItem('sim_user'));
+    if (!user || user.role !== 'hod') {
+      window.location.href = 'login.html';
+    }
+  </script>
+</head>
+<body class="min-h-screen flex bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-[#002f4b] text-white flex flex-col py-6 px-4">
+    <div class="flex items-center justify-center mb-6">
+      <img src="sim_card_logo.png" alt="Nayara Logo" class="w-20 h-20 object-contain rounded-full shadow-md" />
+    </div>
+    <h1 class="text-xl font-bold text-center mb-6">SIM Dashboard</h1>
+    <nav class="space-y-4">
+      <a href="#" class="flex items-center gap-2 hover:bg-white/10 p-2 rounded"><i class='bx bx-home'></i> Dashboard</a>
+      <a href="#pending" class="flex items-center gap-2 hover:bg-white/10 p-2 rounded"><i class='bx bx-list-ul'></i> Pending Requests</a>
+      <a href="#" class="flex items-center gap-2 hover:bg-white/10 p-2 rounded"><i class='bx bx-cog'></i> Settings</a>
+      <button onclick="logout()" class="flex items-center gap-2 bg-white/10 hover:bg-white/20 p-2 rounded">
+        <i class='bx bx-log-out'></i> Logout
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-8 space-y-6">
+    <div class="flex justify-between items-center">
+      <h2 class="text-2xl font-semibold">Welcome, HOD 👋</h2>
+      <div class="bg-white dark:bg-gray-800 px-4 py-2 rounded shadow text-gray-600 dark:text-gray-300">Role: HOD</div>
+    </div>
+
+    <section id="pending">
+      <h3 class="text-xl font-semibold mb-4">Pending HOD Approvals</h3>
+      <div id="requests" class="space-y-6"></div>
+    </section>
+  </main>
+
+  <script>
+    async function loadRequests() {
+      const res = await fetch('/api/requests', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await res.json();
+      const pending = data.filter(req => req.status === 'HOD Pending');
+
+      const container = document.getElementById('requests');
+      container.innerHTML = '';
+
+      if (pending.length === 0) {
+        container.innerHTML = '<p class="text-gray-600">No pending HOD requests.</p>';
+        return;
+      }
+
+      pending.forEach(req => {
+        const div = document.createElement('div');
+        div.className = 'bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md';
+
+        div.innerHTML = `
+          <h3 class="font-bold mb-2 text-blue-800">Request ID: ${req._id}</h3>
+          <p><strong>Employee Name:</strong> ${req.employeeName}</p>
+          <p><strong>Employee ID:</strong> ${req.employeeId}</p>
+          <p><strong>Email:</strong> ${req.email}</p>
+          <p><strong>Request Type:</strong> ${req.requestType}</p>
+          <p><strong>Justification:</strong> ${req.justification}</p>
+          <p><strong>Priority:</strong> ${req.priority}</p>
+          <p><strong>Document:</strong> ${req.document ? `<a href="${req.document}" target="_blank" class="text-blue-600 underline">View</a>` : 'No document uploaded'}</p>
+
+          <form onsubmit="handleApproval(event, '${req._id}')" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <input type="text" name="name" placeholder="HOD Name*" required class="border px-3 py-2 rounded" />
+            <input type="email" name="email" placeholder="HOD Email*" required class="border px-3 py-2 rounded" />
+            <input type="date" name="date" required class="border px-3 py-2 rounded col-span-2" />
+
+            <div class="col-span-2 flex space-x-4 mt-2">
+              <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Approve</button>
+              <button type="button" onclick="handleRejection(event, '${req._id}', this.form)" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Reject</button>
+            </div>
+          </form>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    async function handleApproval(event, id) {
+      event.preventDefault();
+      const form = event.target;
+      const token = localStorage.getItem('token');
+      const name = form.name.value;
+      const email = form.email.value;
+      const date = form.date.value;
+
+      const res = await fetch(`/api/requests/${id}/hod-approve`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ name, email, approvalDate: date })
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        alert('✅ Request Approved!');
+        loadRequests();
+      } else {
+        alert('❌ ' + (result.error || 'Approval failed.'));
+      }
+    }
+
+    async function handleRejection(event, id, form) {
+      event.preventDefault();
+      const token = localStorage.getItem('token');
+      const name = form.name.value;
+      const email = form.email.value;
+      const date = form.date.value;
+
+      const res = await fetch(`/api/requests/${id}/hod-reject`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ name, email, approvalDate: date })
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        alert('❌ Request Rejected');
+        loadRequests();
+      } else {
+        alert('❌ ' + (result.error || 'Rejection failed.'));
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('sim_user');
+      localStorage.removeItem('token');
+      window.location.href = 'login.html';
+    }
+
+    loadRequests();
+  </script>
+</body>
+</html>
